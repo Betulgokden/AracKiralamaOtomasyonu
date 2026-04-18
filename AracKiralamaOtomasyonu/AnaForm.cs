@@ -1,0 +1,200 @@
+using System;
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Data.SQLite;
+using System.IO;
+
+namespace AracKiralamaOtomasyonu
+{
+    public class AnaForm : Form
+    {
+        private Button btnAraclar, btnMusteriler, btnKiralamalar, btnRaporlar, btnCikis;
+        private Label lblBaslik, lblAracOzet, lblMusteriOzet, lblKiralamaOzet, lblBugunKiralama, lblKullaniciBilgi, lblClock;
+        private DataGridView dgvSonIslemler;
+        private Timer timerClock;
+        private Panel pnlSidebar;
+
+        public AnaForm()
+        {
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer | ControlStyles.OptimizedDoubleBuffer, true);
+            InitializeComponents();
+            UIHelper.ApplyModernBackground(this);
+            OzetleriGuncelle();
+            timerClock.Start();
+        }
+
+        private void InitializeComponents()
+        {
+            this.Text = "ARTVİN ARAÇ KİRALAMA - Yönetim Paneli";
+            this.Size = new Size(1150, 750);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Font = new Font("Segoe UI", 10);
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+
+            // Sidebar
+            pnlSidebar = new Panel()
+            {
+                Dock = DockStyle.Left,
+                Width = 260,
+                BackColor = Color.FromArgb(160, 20, 30, 48) // Yarı saydam lüks
+            };
+
+            lblBaslik = new Label()
+            {
+                Text = "ARTVİN\nKİRALAMA",
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Location = new Point(25, 40),
+                Size = new Size(210, 80),
+                ForeColor = Color.White,
+                BackColor = Color.Transparent
+            };
+            pnlSidebar.Controls.Add(lblBaslik);
+
+            lblKullaniciBilgi = new Label()
+            {
+                Text = "Betül GÖKDEN",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = UIHelper.AccentColor,
+                Location = new Point(25, 130),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            pnlSidebar.Controls.Add(lblKullaniciBilgi);
+
+            // Menü Butonları
+            int by = 200;
+            btnAraclar = CreateSidebarButton("🚗  Araç Filosu", by, pnlSidebar);
+            btnAraclar.Click += (s, e) => { new AracForm().ShowDialog(); OzetleriGuncelle(); };
+
+            btnMusteriler = CreateSidebarButton("👥  Müşteri Veritabanı", by + 65, pnlSidebar);
+            btnMusteriler.Click += (s, e) => { new MusteriForm().ShowDialog(); OzetleriGuncelle(); };
+
+            btnKiralamalar = CreateSidebarButton("📚  Kiralama Takibi", by + 130, pnlSidebar);
+            btnKiralamalar.Click += (s, e) => { new KiralamaForm().ShowDialog(); OzetleriGuncelle(); };
+
+            btnRaporlar = CreateSidebarButton("📊  Finansal Analiz", by + 195, pnlSidebar);
+            btnRaporlar.Click += (s, e) => { new RaporForm().ShowDialog(); OzetleriGuncelle(); };
+
+            btnCikis = new Button()
+            {
+                Text = "🚪 Çıkış Güvenli",
+                Dock = DockStyle.Bottom,
+                Height = 60,
+                BackColor = Color.FromArgb(100, 30, 41, 59),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnCikis.FlatAppearance.BorderSize = 0;
+            btnCikis.Click += (s, e) => this.Close();
+            pnlSidebar.Controls.Add(btnCikis);
+
+            // Dashboard Header
+            Panel pnlHeader = new Panel() { Dock = DockStyle.Top, Height = 100, BackColor = Color.FromArgb(100, 15, 23, 42) };
+            Label lblHeaderTitle = new Label() { Text = "Genel Bakış & İstatistikler", Font = new Font("Segoe UI", 18, FontStyle.Bold), ForeColor = Color.White, Location = new Point(280, 30), AutoSize = true, BackColor = Color.Transparent };
+            
+            lblClock = new Label() { 
+                Text = DateTime.Now.ToString("T"), 
+                Font = new Font("Segoe UI", 14, FontStyle.Bold), 
+                ForeColor = UIHelper.AccentColor, 
+                Dock = DockStyle.Right, 
+                Width = 200, 
+                TextAlign = ContentAlignment.MiddleRight,
+                Padding = new Padding(0, 0, 30, 0),
+                BackColor = Color.Transparent
+            };
+            pnlHeader.Controls.Add(lblHeaderTitle); 
+            pnlHeader.Controls.Add(lblClock);
+
+            timerClock = new Timer() { Interval = 1000 };
+            timerClock.Tick += (s, e) => lblClock.Text = DateTime.Now.ToString("HH:mm:ss");
+
+            // Stat Cards Container
+            int startX = 280, startY = 120, cardW = 270, cardH = 120;
+
+            lblAracOzet = CreateStatCard("MEVCUT ARAÇLAR", "0", "🚗", new Point(startX, startY), Color.FromArgb(37, 99, 235));
+            lblMusteriOzet = CreateStatCard("MÜŞTERİ SAYISI", "0", "👥", new Point(startX + cardW + 20, startY), Color.FromArgb(124, 58, 237));
+            lblKiralamaOzet = CreateStatCard("AKTİF KİRALAMALAR", "0", "📑", new Point(startX, startY + cardH + 20), Color.FromArgb(16, 185, 129));
+            lblBugunKiralama = CreateStatCard("TOPLAM HASILAT", "0,00 TL", "💰", new Point(startX + cardW + 20, startY + cardH + 20), Color.FromArgb(245, 158, 11));
+
+            // Son İşlemler
+            Label lblListTitle = new Label() { Text = "Son İşlemler & Canlı Akış", Font = new Font("Segoe UI", 14, FontStyle.Bold), Location = new Point(280, startY + (cardH + 20) * 2 + 20), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent };
+            
+            dgvSonIslemler = new DataGridView() { 
+                Location = new Point(280, startY + (cardH + 20) * 2 + 60), 
+                Size = new Size(820, 240),
+                ScrollBars = ScrollBars.Vertical
+            };
+            UIHelper.StyleDataGridView(dgvSonIslemler);
+
+            this.Controls.Add(dgvSonIslemler);
+            this.Controls.Add(lblListTitle);
+            this.Controls.Add(pnlHeader);
+            this.Controls.Add(pnlSidebar);
+        }
+
+        private Label CreateStatCard(string title, string value, string icon, Point loc, Color color)
+        {
+            Panel p = new Panel() { Location = loc, Size = new Size(270, 120), BackColor = UIHelper.CardColor };
+            UIHelper.ApplyShadow(p);
+            
+            Label lIcon = new Label() { Text = icon, Font = new Font("Segoe UI", 28), ForeColor = color, Location = new Point(190, 30), Size = new Size(60, 60), TextAlign = ContentAlignment.MiddleCenter, BackColor = Color.Transparent };
+            Label lTitle = new Label() { Text = title, Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = UIHelper.TextSecondary, Location = new Point(20, 20), AutoSize = true, BackColor = Color.Transparent };
+            Label lVal = new Label() { Text = value, Font = new Font("Segoe UI", 20, FontStyle.Bold), ForeColor = Color.White, Location = new Point(20, 50), Size = new Size(180, 50), TextAlign = ContentAlignment.MiddleLeft, BackColor = Color.Transparent };
+            
+            p.Controls.Add(lIcon); p.Controls.Add(lTitle); p.Controls.Add(lVal);
+            this.Controls.Add(p);
+            return lVal;
+        }
+
+        private Button CreateSidebarButton(string text, int y, Control parent)
+        {
+            Button btn = new Button()
+            {
+                Text = text,
+                Location = new Point(15, y),
+                Size = new Size(230, 50),
+                BackColor = Color.Transparent,
+                ForeColor = Color.FromArgb(148, 163, 184),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(15, 0, 0, 0),
+                Cursor = Cursors.Hand
+            };
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(30, 41, 59);
+            btn.MouseEnter += (s, e) => btn.ForeColor = Color.White;
+            btn.MouseLeave += (s, e) => btn.ForeColor = Color.FromArgb(148, 163, 184);
+            parent.Controls.Add(btn);
+            return btn;
+        }
+
+        private void OzetleriGuncelle()
+        {
+            try {
+                using (var connection = DatabaseHelper.GetConnection()) {
+                    lblAracOzet.Text = (new SQLiteCommand("SELECT COUNT(*) FROM Araclar", connection).ExecuteScalar() ?? 0).ToString();
+                    lblMusteriOzet.Text = (new SQLiteCommand("SELECT COUNT(*) FROM Musteriler", connection).ExecuteScalar() ?? 0).ToString();
+                    lblKiralamaOzet.Text = (new SQLiteCommand("SELECT COUNT(*) FROM Kiralamalar WHERE Durum='Aktif'", connection).ExecuteScalar() ?? 0).ToString();
+                    
+                    object ciro = new SQLiteCommand("SELECT SUM(ToplamTutar) FROM Kiralamalar", connection).ExecuteScalar();
+                    lblBugunKiralama.Text = (ciro == DBNull.Value) ? "0,00 TL" : Convert.ToDouble(ciro).ToString("C2");
+
+                    DataTable dt = new DataTable();
+                    new SQLiteDataAdapter(@"
+                        SELECT m.AdSoyad as [Müşteri], a.Marka || ' ' || a.Model as [Araç], k.BaslangicTarihi as [Tarih], k.ToplamTutar as [Tutar]
+                        FROM Kiralamalar k 
+                        JOIN Musteriler m ON k.MusteriId = m.Id 
+                        JOIN Araclar a ON k.AracId = a.Id 
+                        ORDER BY k.Id DESC LIMIT 6", connection).Fill(dt);
+                    dgvSonIslemler.DataSource = dt;
+                }
+            } catch { }
+        }
+    }
+}
