@@ -10,7 +10,7 @@ namespace AracKiralamaOtomasyonu
 {
     public class MusteriKiralamaForm : Form
     {
-        private FlowLayoutPanel flowAraclar;
+        private ModernFlowLayoutPanel flowAraclar;
         private Label lblHeader, lblSubHeader;
         private TextBox txtAra;
 
@@ -84,10 +84,10 @@ namespace AracKiralamaOtomasyonu
             pnlTop.Controls.Add(pnlSearch);
 
             // Gallery area - full width
-            flowAraclar = new FlowLayoutPanel() {
+            flowAraclar = new ModernFlowLayoutPanel() {
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
+                BackColor = Color.Transparent, // Görseli görmek için tekrar saydam yapıldı ama ModernFlowLayoutPanel sayesinde kasmayacak
                 Padding = new Padding(20, 20, 20, 20),
                 WrapContents = true
             };

@@ -89,6 +89,7 @@ namespace AracKiralamaOtomasyonu
 
                 SeedAdminUser(connection);
                 SeedSampleData(connection);
+                UpdateArtvinData(connection);
             }
         }
 
@@ -197,6 +198,98 @@ namespace AracKiralamaOtomasyonu
                     "INSERT INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('55566677788', 'Ayşe Demir', '0544 444 55 66', 'EHL456', 'Ankara')"
                 };
                 foreach (var s in musteriler) ExecuteCommand(s, connection);
+            }
+        }
+
+        private static void UpdateArtvinData(SQLiteConnection connection)
+        {
+            // Eski kayıtları güncelle (Artvin ve ilçeleri yap)
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Merkez, Artvin' WHERE Id % 9 = 0", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Hopa, Artvin' WHERE Id % 9 = 1", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Borçka, Artvin' WHERE Id % 9 = 2", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Şavşat, Artvin' WHERE Id % 9 = 3", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Arhavi, Artvin' WHERE Id % 9 = 4", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Yusufeli, Artvin' WHERE Id % 9 = 5", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Ardanuç, Artvin' WHERE Id % 9 = 6", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Murgul, Artvin' WHERE Id % 9 = 7", connection);
+            ExecuteCommand("UPDATE Musteriler SET Adres = 'Kemalpaşa, Artvin' WHERE Id % 9 = 8", connection);
+
+            // Eğer kiralama işlemi azsa ekle (Ana sayfada dolsun diye)
+            long kiralamaSayisi = (long)new SQLiteCommand("SELECT COUNT(*) FROM Kiralamalar", connection).ExecuteScalar();
+            if (kiralamaSayisi < 10)
+            {
+                // Müşterileri zorla ekle (Eğer daha önce eklenmemişse TC ile kontrol ederek)
+                string[] yeniMusteriler = {
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000001', 'Ali Yılmaz', '0530 100 00 01', 'EHL101', 'Merkez, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000002', 'Elif Doğan', '0530 100 00 02', 'EHL102', 'Arhavi, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000003', 'Mehmet Öztürk', '0530 100 00 03', 'EHL103', 'Şavşat, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000004', 'Zeynep Koç', '0530 100 00 04', 'EHL104', 'Hopa, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000005', 'Caner Aydın', '0530 100 00 05', 'EHL105', 'Yusufeli, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000006', 'Merve Erdoğan', '0530 100 00 06', 'EHL106', 'Borçka, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000007', 'Mustafa Çelik', '0530 100 00 07', 'EHL107', 'Ardanuç, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000008', 'Büşra Yavuz', '0530 100 00 08', 'EHL108', 'Murgul, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000009', 'Burak Aslan', '0530 100 00 09', 'EHL109', 'Kemalpaşa, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000010', 'Seda Kılıç', '0530 100 00 10', 'EHL110', 'Merkez, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000011', 'Kemal Şahin', '0530 100 00 11', 'EHL111', 'Arhavi, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000012', 'Gizem Çetin', '0530 100 00 12', 'EHL112', 'Şavşat, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000013', 'Volkan Yıldız', '0530 100 00 13', 'EHL113', 'Hopa, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000014', 'Fatma Aksoy', '0530 100 00 14', 'EHL114', 'Yusufeli, Artvin')",
+                    "INSERT OR IGNORE INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES ('10000000015', 'Ebru Tekin', '0530 100 00 15', 'EHL115', 'Borçka, Artvin')"
+                };
+                foreach (var s in yeniMusteriler) ExecuteCommand(s, connection);
+
+                // Müşterilerin Id'lerini çekelim (İsimlerine göre eşleştirerek sağlam yaparız)
+                string[] kiralamalar = {
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000001'), 1, '{DateTime.Now.AddDays(-2):yyyy-MM-dd}', '{DateTime.Now.AddDays(2):yyyy-MM-dd}', 6000, 'Aktif', 'Tam Kapsamlı', 'Bebek Koltuğu', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000002'), 2, '{DateTime.Now.AddDays(-1):yyyy-MM-dd}', '{DateTime.Now.AddDays(3):yyyy-MM-dd}', 5600, 'Aktif', 'Standart', 'Yok', 'Nakit')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000003'), 3, '{DateTime.Now.AddDays(-5):yyyy-MM-dd}', '{DateTime.Now.AddDays(-1):yyyy-MM-dd}', 6400, 'Tamamlandı', 'Standart', 'Navigasyon', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000004'), 4, '{DateTime.Now.AddDays(1):yyyy-MM-dd}', '{DateTime.Now.AddDays(4):yyyy-MM-dd}', 5400, 'Aktif', 'Tam Kapsamlı', 'Yok', 'Havale')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000005'), 5, '{DateTime.Now.AddDays(-3):yyyy-MM-dd}', '{DateTime.Now.AddDays(5):yyyy-MM-dd}', 20000, 'Aktif', 'Tam Kapsamlı', 'Ek Sürücü', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000006'), 6, '{DateTime.Now.AddDays(-10):yyyy-MM-dd}', '{DateTime.Now.AddDays(-7):yyyy-MM-dd}', 3900, 'Tamamlandı', 'Standart', 'Yok', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000007'), 7, '{DateTime.Now.AddDays(-1):yyyy-MM-dd}', '{DateTime.Now.AddDays(2):yyyy-MM-dd}', 6000, 'Aktif', 'Standart', 'Bebek Koltuğu', 'Nakit')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000008'), 8, '{DateTime.Now.AddDays(0):yyyy-MM-dd}', '{DateTime.Now.AddDays(3):yyyy-MM-dd}', 5100, 'Aktif', 'Tam Kapsamlı', 'Yok', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000009'), 9, '{DateTime.Now.AddDays(-4):yyyy-MM-dd}', '{DateTime.Now.AddDays(1):yyyy-MM-dd}', 6000, 'Aktif', 'Standart', 'Navigasyon', 'Havale')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000010'), 10, '{DateTime.Now.AddDays(-2):yyyy-MM-dd}', '{DateTime.Now.AddDays(0):yyyy-MM-dd}', 3000, 'Tamamlandı', 'Standart', 'Yok', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000011'), 11, '{DateTime.Now.AddDays(-6):yyyy-MM-dd}', '{DateTime.Now.AddDays(-2):yyyy-MM-dd}', 8800, 'Tamamlandı', 'Full Kasko', 'Yok', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000012'), 12, '{DateTime.Now.AddDays(-1):yyyy-MM-dd}', '{DateTime.Now.AddDays(6):yyyy-MM-dd}', 14000, 'Aktif', 'Standart', 'Çocuk Koltuğu', 'Nakit')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000013'), 13, '{DateTime.Now.AddDays(-8):yyyy-MM-dd}', '{DateTime.Now.AddDays(-5):yyyy-MM-dd}', 7500, 'Tamamlandı', 'Standart', 'Yok', 'Kredi Kartı')",
+                    $"INSERT INTO Kiralamalar (MusteriId, AracId, BaslangicTarihi, BitisTarihi, ToplamTutar, Durum, SigortaTipi, EkstraHizmetler, OdemeYontemi) VALUES ((SELECT Id FROM Musteriler WHERE TCNo='10000000014'), 14, '{DateTime.Now.AddDays(0):yyyy-MM-dd}', '{DateTime.Now.AddDays(2):yyyy-MM-dd}', 6000, 'Aktif', 'Tam Kapsamlı', 'Yok', 'Kredi Kartı')"
+                };
+
+                foreach (var k in kiralamalar)
+                {
+                    try { ExecuteCommand(k, connection); } catch { }
+                }
+
+                ExecuteCommand("UPDATE Araclar SET Durum = 'Dolu' WHERE Id IN (1, 2, 4, 5, 7, 8, 9, 12, 14)", connection);
+            }
+
+            // --- LÜKS VE PREMIUM ARAÇLARI ÇOĞALTMA ---
+            long aracSayisi = (long)new SQLiteCommand("SELECT COUNT(*) FROM Araclar", connection).ExecuteScalar();
+            if (aracSayisi < 20)
+            {
+                string[] luksAraclar = {
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 MER 01', 'Mercedes', 'S-Class', 2024, 'Otomatik', 'Hibrit', 1500, 7500, 'Boş', 'Assets\\mercedes.png', 367, 5.1, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('06 BMW 02', 'BMW', '520i', 2024, 'Otomatik', 'Benzin', 4000, 5000, 'Boş', 'Assets\\bmw.png', 170, 7.8, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('35 AUD 03', 'Audi', 'A6', 2023, 'Otomatik', 'Dizel', 12000, 4800, 'Boş', 'Assets\\audi.png', 204, 8.1, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 POR 04', 'Porsche', 'Taycan', 2024, 'Otomatik', 'Elektrik', 500, 12000, 'Boş', 'Assets\\porsche.png', 408, 5.4, 4)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 TES 05', 'Tesla', 'Model S', 2024, 'Otomatik', 'Elektrik', 1200, 9000, 'Boş', 'Assets\\tesla.png', 670, 3.2, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 FER 06', 'Ferrari', 'Roma', 2023, 'Otomatik', 'Benzin', 3000, 25000, 'Boş', 'Assets\\ferrari.png', 620, 3.4, 2)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('07 LAM 07', 'Lamborghini', 'Urus', 2024, 'Otomatik', 'Benzin', 2500, 30000, 'Boş', 'Assets\\lamborghini.png', 650, 3.6, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 MAS 08', 'Maserati', 'Ghibli', 2023, 'Otomatik', 'Hibrit', 8000, 8500, 'Boş', 'Assets\\maserati.png', 330, 5.7, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('06 BEN 09', 'Bentley', 'Continental', 2024, 'Otomatik', 'Benzin', 1000, 35000, 'Boş', 'Assets\\bentley.png', 550, 4.0, 4)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 AST 10', 'Aston Martin', 'DB11', 2023, 'Otomatik', 'Benzin', 4500, 28000, 'Boş', 'Assets\\astonmartin.png', 503, 4.0, 4)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 JAG 11', 'Jaguar', 'F-Type', 2024, 'Otomatik', 'Benzin', 2000, 11000, 'Boş', 'Assets\\jaguar.png', 300, 5.7, 2)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('06 RVR 12', 'Land Rover', 'Range Rover', 2024, 'Otomatik', 'Dizel', 6000, 15000, 'Boş', 'Assets\\landrover.png', 300, 7.3, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 ALF 13', 'Alfa Romeo', 'Giulia', 2023, 'Otomatik', 'Benzin', 9000, 4500, 'Boş', 'Assets\\alfaromeo.png', 280, 5.2, 5)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('34 CRV 14', 'Corvette', 'Stingray', 2024, 'Otomatik', 'Benzin', 1000, 18000, 'Boş', 'Assets\\corvette.png', 490, 2.9, 2)",
+                    "INSERT INTO Araclar (Plaka, Marka, Model, Yil, Vites, Yakit, Kilometre, GunlukFiyat, Durum, ResimYolu, Guc, Hizlanma, KoltukSayisi) VALUES ('06 SUB 15', 'Subaru', 'Impreza', 2023, 'Otomatik', 'Benzin', 15000, 3000, 'Boş', 'Assets\\subaru.png', 152, 9.8, 5)"
+                };
+
+                foreach (var a in luksAraclar)
+                {
+                    try { ExecuteCommand(a, connection); } catch { }
+                }
             }
         }
 

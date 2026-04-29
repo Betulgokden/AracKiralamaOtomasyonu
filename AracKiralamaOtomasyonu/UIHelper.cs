@@ -17,20 +17,29 @@ namespace AracKiralamaOtomasyonu
         public static Color TextPrimary = Color.White; // Switched to white for dark theme
         public static Color TextSecondary = Color.FromArgb(148, 163, 184); // Light grey/blue
 
+        private static Image _cachedBg;
+
         public static void ApplyModernBackground(Form form)
         {
             try
             {
-                // Attempt to load the luxury showroom background
-                string bgPath = System.IO.Path.Combine(Application.StartupPath, "Assets", "bg_luxury.png");
-                if (System.IO.File.Exists(bgPath))
+                if (_cachedBg == null)
                 {
-                    form.BackgroundImage = Image.FromFile(bgPath);
+                    string bgPath = System.IO.Path.Combine(Application.StartupPath, "Assets", "bg_luxury.png");
+                    if (System.IO.File.Exists(bgPath))
+                    {
+                        _cachedBg = Image.FromFile(bgPath);
+                    }
+                }
+                
+                if (_cachedBg != null)
+                {
+                    form.BackgroundImage = _cachedBg;
                     form.BackgroundImageLayout = ImageLayout.Stretch;
                 }
-                form.BackColor = BackgroundColor; // Fallback
             }
             catch { }
+            form.BackColor = BackgroundColor; 
         }
 
         public static void AnimateControlLift(Control control, bool entering)
@@ -164,8 +173,7 @@ namespace AracKiralamaOtomasyonu
         public bool IsSelected { get; set; }
         public Action OnClick { get; set; }
 
-        private float _animationValue = 0; // 0 to 1
-        private Timer _animTimer;
+        private float _animationValue = 0; // 0 or 1
         private bool _isHovered = false;
 
         public ModernCarCard()
@@ -174,22 +182,10 @@ namespace AracKiralamaOtomasyonu
             this.Cursor = Cursors.Hand;
             UIHelper.SetDoubleBuffered(this);
             this.Margin = new Padding(12);
-
-            _animTimer = new Timer() { Interval = 16 };
-            _animTimer.Tick += (s, e) => {
-                if (_isHovered) {
-                    if (_animationValue < 1f) _animationValue += 0.15f;
-                    else _animTimer.Stop();
-                } else {
-                    if (_animationValue > 0f) _animationValue -= 0.15f;
-                    else _animTimer.Stop();
-                }
-                this.Invalidate();
-            };
         }
 
-        protected override void OnMouseEnter(EventArgs e) { _isHovered = true; _animTimer.Start(); base.OnMouseEnter(e); }
-        protected override void OnMouseLeave(EventArgs e) { _isHovered = false; _animTimer.Start(); base.OnMouseLeave(e); }
+        protected override void OnMouseEnter(EventArgs e) { _isHovered = true; _animationValue = 1f; this.Invalidate(); base.OnMouseEnter(e); }
+        protected override void OnMouseLeave(EventArgs e) { _isHovered = false; _animationValue = 0f; this.Invalidate(); base.OnMouseLeave(e); }
         protected override void OnMouseDown(MouseEventArgs e) { OnClick?.Invoke(); base.OnMouseDown(e); }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -260,6 +256,36 @@ namespace AracKiralamaOtomasyonu
             path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
             path.CloseFigure();
             return path;
+        }
+    }
+
+    // Yırtılmaları ve kasmaları önleyen donanım hızlandırmalı panel
+    public class ModernFlowLayoutPanel : FlowLayoutPanel
+    {
+        public ModernFlowLayoutPanel()
+        {
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x02000000; // WS_EX_COMPOSITED (Tüm alt kontrolleri ve saydamlığı donanım seviyesinde double-buffer yapar)
+                return cp;
+            }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+            // WM_VSCROLL (0x115), WM_HSCROLL (0x114), WM_MOUSEWHEEL (0x20A)
+            if (m.Msg == 0x115 || m.Msg == 0x114 || m.Msg == 0x20A)
+            {
+                this.Invalidate(true); // Kaydırma anında eski piksellerin ekranda kalmasını zorla engeller
+            }
         }
     }
 }

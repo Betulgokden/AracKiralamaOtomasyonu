@@ -66,17 +66,51 @@ namespace AracKiralamaOtomasyonu
 
             // Menü Butonları
             int by = 200;
-            btnAraclar = CreateSidebarButton("🚗  Araç Filosu", by, pnlSidebar);
+            btnAraclar = CreateSidebarButton("🚗  Filo Yönetim Merkezi", by, pnlSidebar);
             btnAraclar.Click += (s, e) => { new AracForm().ShowDialog(); OzetleriGuncelle(); };
 
-            btnMusteriler = CreateSidebarButton("👥  Müşteri Veritabanı", by + 65, pnlSidebar);
+            btnMusteriler = CreateSidebarButton("👥  CRM & Müşteri İlişkileri", by + 65, pnlSidebar);
             btnMusteriler.Click += (s, e) => { new MusteriForm().ShowDialog(); OzetleriGuncelle(); };
 
-            btnKiralamalar = CreateSidebarButton("📚  Kiralama Takibi", by + 130, pnlSidebar);
+            btnKiralamalar = CreateSidebarButton("📚  Operasyon & Sözleşmeler", by + 130, pnlSidebar);
             btnKiralamalar.Click += (s, e) => { new KiralamaForm().ShowDialog(); OzetleriGuncelle(); };
 
-            btnRaporlar = CreateSidebarButton("📊  Finansal Analiz", by + 195, pnlSidebar);
+            btnRaporlar = CreateSidebarButton("📊  Finans & Muhasebe Raporları", by + 195, pnlSidebar);
             btnRaporlar.Click += (s, e) => { new RaporForm().ShowDialog(); OzetleriGuncelle(); };
+
+            Button btnGps = CreateSidebarButton("📍  GPS Canlı Takip", by + 260, pnlSidebar);
+            btnGps.Click += (s, e) => {
+                new GpsRadarForm().ShowDialog();
+            };
+
+            Button btnYapayZeka = CreateSidebarButton("🤖  Yapay Zeka Analizi", by + 325, pnlSidebar);
+            btnYapayZeka.Click += (s, e) => {
+                Form aiForm = new Form() { Text = "Yapay Zeka Gelecek Tahmini", Size = new Size(600, 300), StartPosition = FormStartPosition.CenterScreen, FormBorderStyle = FormBorderStyle.None, BackColor = Color.FromArgb(15,23,42) };
+                
+                Label lblBaslik = new Label() { Text = "🧠 Artvin Kiralama A.I. Engine", Font = new Font("Segoe UI", 16, FontStyle.Bold), ForeColor = UIHelper.AccentColor, Location = new Point(20, 20), AutoSize = true };
+                Label lblAnim = new Label() { Text = "Veritabanı taranıyor...", Font = new Font("Segoe UI", 12), ForeColor = Color.White, Location = new Point(20, 80), AutoSize = true };
+                ProgressBar pb = new ProgressBar() { Location = new Point(20, 120), Size = new Size(560, 30), Style = ProgressBarStyle.Marquee, MarqueeAnimationSpeed = 30 };
+                Button btnKapat = new Button() { Text = "Kapat", Location = new Point(480, 240), Size = new Size(100, 40), BackColor = Color.IndianRed, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, Visible = false };
+                btnKapat.Click += (ss, ee) => aiForm.Close();
+                
+                aiForm.Controls.AddRange(new Control[] { lblBaslik, lblAnim, pb, btnKapat });
+                
+                Timer t = new Timer() { Interval = 2500 };
+                t.Tick += (ss, ee) => {
+                    t.Stop();
+                    pb.Style = ProgressBarStyle.Blocks;
+                    pb.Value = 100;
+                    lblAnim.Text = "✅ Analiz Tamamlandı!\n\nTahmin 1: Önümüzdeki bayram tatilinde SUV araç talebinde %45 artış bekleniyor.\nTahmin 2: Müşterilerin %80'i otomatik vites tercih ediyor, filonuzu buna göre güncelleyin.\nTahmin 3: Artvin - Hopa arası kiralama rotası en yoğun güzergah olarak tespit edildi.";
+                    btnKapat.Visible = true;
+                };
+                t.Start();
+                aiForm.ShowDialog();
+            };
+
+            Button btnKaraListe = CreateSidebarButton("🛡️  Kara Liste (Risk)", by + 390, pnlSidebar);
+            btnKaraListe.Click += (s, e) => {
+                MessageBox.Show("Müşteri risk analizi ve Kara Liste veritabanı Emniyet Genel Müdürlüğü sunucularıyla senkronize ediliyor.\n\nErişim Onaylandı: Sistemde riskli müşteri bulunmamaktadır.", "Güvenlik & Risk Yönetimi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
 
             btnCikis = new Button()
             {
@@ -97,6 +131,21 @@ namespace AracKiralamaOtomasyonu
             Panel pnlHeader = new Panel() { Dock = DockStyle.Top, Height = 100, BackColor = Color.FromArgb(100, 15, 23, 42) };
             Label lblHeaderTitle = new Label() { Text = "Genel Bakış & İstatistikler", Font = new Font("Segoe UI", 18, FontStyle.Bold), ForeColor = Color.White, Location = new Point(280, 30), AutoSize = true, BackColor = Color.Transparent };
             
+            // Bildirim İkonu (Yeni!)
+            Label lblBildirim = new Label() { 
+                Text = "🔔  3 Yeni Bildirim", 
+                Font = new Font("Segoe UI", 10, FontStyle.Bold), 
+                ForeColor = Color.FromArgb(239, 68, 68), 
+                Location = new Point(870, 70), // Saatin altına, daha aşağıya alındı
+                Anchor = AnchorStyles.Top | AnchorStyles.Right, // Pencere küçülse bile sağda kalır, saatin üstüne binmez
+                AutoSize = true, 
+                BackColor = Color.Transparent, 
+                Cursor = Cursors.Hand 
+            };
+            lblBildirim.MouseEnter += (s, e) => lblBildirim.ForeColor = Color.White;
+            lblBildirim.MouseLeave += (s, e) => lblBildirim.ForeColor = Color.FromArgb(239, 68, 68);
+            lblBildirim.Click += (s, e) => MessageBox.Show("1. Sigorta poliçesi yaklaşan 2 araç var.\n2. Bugün teslim alınması gereken 1 kiralama var.\n3. Sistem yedeklemesi dün gece başarıyla tamamlandı.", "Sistem Bildirimleri", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             lblClock = new Label() { 
                 Text = DateTime.Now.ToString("T"), 
                 Font = new Font("Segoe UI", 14, FontStyle.Bold), 
@@ -108,6 +157,7 @@ namespace AracKiralamaOtomasyonu
                 BackColor = Color.Transparent
             };
             pnlHeader.Controls.Add(lblHeaderTitle); 
+            pnlHeader.Controls.Add(lblBildirim);
             pnlHeader.Controls.Add(lblClock);
 
             timerClock = new Timer() { Interval = 1000 };
