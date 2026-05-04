@@ -147,7 +147,7 @@ namespace AracKiralamaOtomasyonu
                 Tag = id
             };
 
-            card.OnClick = () => {
+            card.CardClick = () => {
                 // Open the detail form for this car
                 using (var con = DatabaseHelper.GetConnection())
                 using (var cmd = new SQLiteCommand("SELECT * FROM Araclar WHERE Id=@id", con))

@@ -171,10 +171,9 @@ namespace AracKiralamaOtomasyonu
         public string Price { get; set; }
         public string Stats { get; set; }
         public bool IsSelected { get; set; }
-        public Action OnClick { get; set; }
+        public Action CardClick { get; set; }
 
-        private float _animationValue = 0; // 0 or 1
-        private bool _isHovered = false;
+        private float _animationValue = 0;
 
         public ModernCarCard()
         {
@@ -184,9 +183,9 @@ namespace AracKiralamaOtomasyonu
             this.Margin = new Padding(12);
         }
 
-        protected override void OnMouseEnter(EventArgs e) { _isHovered = true; _animationValue = 1f; this.Invalidate(); base.OnMouseEnter(e); }
-        protected override void OnMouseLeave(EventArgs e) { _isHovered = false; _animationValue = 0f; this.Invalidate(); base.OnMouseLeave(e); }
-        protected override void OnMouseDown(MouseEventArgs e) { OnClick?.Invoke(); base.OnMouseDown(e); }
+        protected override void OnMouseEnter(EventArgs e) { _animationValue = 1f; this.Invalidate(); base.OnMouseEnter(e); }
+        protected override void OnMouseLeave(EventArgs e) { _animationValue = 0f; this.Invalidate(); base.OnMouseLeave(e); }
+        protected override void OnMouseDown(MouseEventArgs e) { CardClick?.Invoke(); base.OnMouseDown(e); }
 
         protected override void OnPaint(PaintEventArgs e)
         {
