@@ -26,102 +26,175 @@ namespace AracKiralamaOtomasyonu
 
         private void InitializeComponents()
         {
-            this.Text = "Müşteri Yönetimi";
-            this.Size = new Size(850, 700);
+            this.Text = "👥 CRM & Müşteri İlişkileri";
+            this.Size = new Size(1050, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 10);
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
 
-            int lblX = 20, txtX = 140, startY = 20, gapY = 40;
+            // ===== TOP HEADER =====
+            Panel pnlHeader = new Panel() {
+                Dock = DockStyle.Top, Height = 80,
+                BackColor = Color.FromArgb(180, 15, 23, 42)
+            };
+            pnlHeader.Controls.Add(new Label() {
+                Text = "👥  CRM & MÜŞTERİ İLİŞKİLERİ",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                ForeColor = Color.White, BackColor = Color.Transparent,
+                Location = new Point(30, 15), AutoSize = true
+            });
+            pnlHeader.Controls.Add(new Label() {
+                Text = "Müşteri kaydı ekle, güncelle, sil ve CRM veritabanını yönet.",
+                Font = new Font("Segoe UI", 9), ForeColor = UIHelper.TextSecondary,
+                BackColor = Color.Transparent, Location = new Point(32, 50), AutoSize = true
+            });
 
-            this.Controls.Add(new Label() { Text = "TC No (11 Hane):", Location = new Point(lblX, startY), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent });
-            txtTCNo = new TextBox() { Location = new Point(txtX, startY), Width = 150, MaxLength = 11 };
+            // ===== FORM PANEL =====
+            Panel pnlForm = new Panel() {
+                Location = new Point(20, 100),
+                Size = new Size(660, 300),
+                BackColor = Color.FromArgb(160, 15, 23, 42)
+            };
+            UIHelper.ApplyShadow(pnlForm);
 
-            this.Controls.Add(new Label() { Text = "Ad Soyad:", Location = new Point(lblX, startY + gapY * 1), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent });
-            txtAdSoyad = new TextBox() { Location = new Point(txtX, startY + gapY * 1), Width = 200 };
+            pnlForm.Controls.Add(new Label() {
+                Text = "📋  Müşteri Bilgileri",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = UIHelper.AccentColor, BackColor = Color.Transparent,
+                Location = new Point(20, 15), AutoSize = true
+            });
 
-            this.Controls.Add(new Label() { Text = "Telefon:", Location = new Point(lblX, startY + gapY * 2), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent });
-            txtTelefon = new TextBox() { Location = new Point(txtX, startY + gapY * 2), Width = 150 };
+            int lblX = 20, txtX = 170, startY = 50, gapY = 44;
 
-            this.Controls.Add(new Label() { Text = "Ehliyet No:", Location = new Point(lblX, startY + gapY * 3), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent });
-            txtEhliyet = new TextBox() { Location = new Point(txtX, startY + gapY * 3), Width = 150 };
+            AddLabel(pnlForm, "TC Kimlik No:", new Point(lblX, startY));
+            txtTCNo = AddInput(pnlForm, new Point(txtX, startY), 180, 11);
 
-            this.Controls.Add(new Label() { Text = "Adres:", Location = new Point(lblX, startY + gapY * 4), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent });
-            txtAdres = new TextBox() { Location = new Point(txtX, startY + gapY * 4), Width = 200, Multiline = true, Height = 60 };
+            AddLabel(pnlForm, "Ad Soyad:", new Point(lblX, startY + gapY));
+            txtAdSoyad = AddInput(pnlForm, new Point(txtX, startY + gapY), 220);
 
-            this.Controls.AddRange(new Control[] { txtTCNo, txtAdSoyad, txtTelefon, txtEhliyet, txtAdres });
+            AddLabel(pnlForm, "Telefon:", new Point(lblX, startY + gapY * 2));
+            txtTelefon = AddInput(pnlForm, new Point(txtX, startY + gapY * 2), 180);
 
-            foreach (var ctrl in new Control[] { txtTCNo, txtAdSoyad, txtTelefon, txtEhliyet, txtAdres })
-            {
-                UIHelper.StyleModernInput(ctrl);
-            }
+            AddLabel(pnlForm, "Ehliyet No:", new Point(lblX, startY + gapY * 3));
+            txtEhliyet = AddInput(pnlForm, new Point(txtX, startY + gapY * 3), 180);
 
-            int btnX = 380;
-            btnEkle = CreateActionButton("Ekle", new Point(btnX, startY), Color.MediumSeaGreen);
+            AddLabel(pnlForm, "Adres:", new Point(lblX, startY + gapY * 4));
+            txtAdres = new TextBox() {
+                Location = new Point(txtX, startY + gapY * 4), Width = 450,
+                Multiline = true, Height = 60
+            };
+            UIHelper.StyleModernInput(txtAdres);
+            pnlForm.Controls.Add(txtAdres);
+
+            // ===== ACTIONS PANEL =====
+            Panel pnlActions = new Panel() {
+                Location = new Point(695, 100),
+                Size = new Size(330, 300),
+                BackColor = Color.FromArgb(160, 15, 23, 42)
+            };
+            UIHelper.ApplyShadow(pnlActions);
+
+            pnlActions.Controls.Add(new Label() {
+                Text = "⚡  İşlemler",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = UIHelper.AccentColor, BackColor = Color.Transparent,
+                Location = new Point(20, 15), AutoSize = true
+            });
+
+            btnEkle = CreateActionButton("➕  Müşteri Ekle", new Point(20, 55), Color.FromArgb(16, 185, 129));
             btnEkle.Click += BtnEkle_Click;
 
-            btnGuncelle = CreateActionButton("Güncelle", new Point(btnX, startY + gapY + 10), Color.DodgerBlue);
+            btnGuncelle = CreateActionButton("✏️  Güncelle", new Point(20, 115), Color.FromArgb(37, 99, 235));
             btnGuncelle.Click += BtnGuncelle_Click;
 
-            btnSil = CreateActionButton("Sil", new Point(btnX, startY + gapY * 2 + 20), Color.IndianRed);
+            btnSil = CreateActionButton("🗑️  Müşteri Sil", new Point(20, 175), Color.FromArgb(220, 38, 38));
             btnSil.Click += BtnSil_Click;
 
-            btnTemizle = CreateActionButton("Temizle", new Point(btnX, startY + gapY * 3 + 30), Color.Gray);
+            btnTemizle = CreateActionButton("🔄  Formu Temizle", new Point(20, 235), Color.FromArgb(71, 85, 105));
             btnTemizle.Click += (s, e) => Temizle();
 
-            this.Controls.AddRange(new Control[] { btnEkle, btnGuncelle, btnSil, btnTemizle });
+            pnlActions.Controls.AddRange(new Control[] { btnEkle, btnGuncelle, btnSil, btnTemizle });
 
-            txtAra = UIHelper.CreateSearchBox("TC veya Ad içinde ara...", this, new Point(20, 310));
+            // ===== GRID PANEL =====
+            Panel pnlGrid = new Panel() {
+                Location = new Point(20, 415),
+                Size = new Size(1005, 245),
+                BackColor = Color.FromArgb(140, 15, 23, 42)
+            };
+            UIHelper.ApplyShadow(pnlGrid);
+
+            pnlGrid.Controls.Add(new Label() {
+                Text = "📊  Müşteri Listesi",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = UIHelper.TextSecondary, BackColor = Color.Transparent,
+                Location = new Point(15, 10), AutoSize = true
+            });
+
+            Panel pnlSearchBox = new Panel() { Location = new Point(550, 8), Size = new Size(440, 36), BackColor = Color.FromArgb(30, 41, 59) };
+            txtAra = new TextBox() {
+                Text = "TC veya Ad içinde ara...", ForeColor = UIHelper.TextSecondary,
+                BackColor = Color.FromArgb(30, 41, 59), BorderStyle = BorderStyle.None,
+                Font = new Font("Segoe UI", 10), Dock = DockStyle.Fill
+            };
+            txtAra.Enter += (s, e) => { if (txtAra.Text.Contains("ara")) { txtAra.Text = ""; txtAra.ForeColor = Color.White; } };
+            txtAra.Leave += (s, e) => { if (string.IsNullOrWhiteSpace(txtAra.Text)) { txtAra.Text = "TC veya Ad içinde ara..."; txtAra.ForeColor = UIHelper.TextSecondary; } };
             txtAra.TextChanged += (s, e) => Listele();
-            this.Controls.Add(txtAra);
+            pnlSearchBox.Padding = new Padding(10, 6, 10, 5);
+            pnlSearchBox.Controls.Add(txtAra);
+            pnlGrid.Controls.Add(pnlSearchBox);
 
-            dgvMusteriler = new DataGridView()
-            {
-                Location = new Point(20, 350),
-                Size = new Size(790, 290),
+            dgvMusteriler = new DataGridView() {
+                Location = new Point(10, 48),
+                Size = new Size(985, 187),
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                ReadOnly = true,
-                AllowUserToAddRows = false
+                MultiSelect = false, ReadOnly = true, AllowUserToAddRows = false
             };
             UIHelper.StyleDataGridView(dgvMusteriler);
             dgvMusteriler.CellClick += DgvMusteriler_CellClick;
-            this.Controls.Add(dgvMusteriler);
+            pnlGrid.Controls.Add(dgvMusteriler);
+
+            this.Controls.Add(pnlHeader);
+            this.Controls.Add(pnlForm);
+            this.Controls.Add(pnlActions);
+            this.Controls.Add(pnlGrid);
+        }
+
+        private Label AddLabel(Panel parent, string text, Point loc)
+        {
+            Label lbl = new Label() { Text = text, Location = loc, AutoSize = true, ForeColor = UIHelper.TextSecondary, BackColor = Color.Transparent };
+            parent.Controls.Add(lbl);
+            return lbl;
+        }
+
+        private TextBox AddInput(Panel parent, Point loc, int width, int maxLen = 100)
+        {
+            TextBox txt = new TextBox() { Location = loc, Width = width, MaxLength = maxLen };
+            UIHelper.StyleModernInput(txt);
+            parent.Controls.Add(txt);
+            return txt;
         }
 
         private Button CreateActionButton(string text, Point loc, Color backColor)
         {
-            return new Button()
-            {
-                Text = text,
-                Location = loc,
-                Width = 120,
-                Height = 40,
-                BackColor = backColor,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                FlatAppearance = { BorderSize = 0 }
+            Button btn = new Button() {
+                Text = text, Location = loc, Width = 285, Height = 50,
+                BackColor = backColor, ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(15, 0, 0, 0), Cursor = Cursors.Hand
             };
+            btn.FlatAppearance.BorderSize = 0;
+            btn.MouseEnter += (s, e) => btn.BackColor = ControlPaint.Light(backColor, 0.15f);
+            btn.MouseLeave += (s, e) => btn.BackColor = backColor;
+            return btn;
         }
 
         private bool Validasyon()
         {
-            if (txtTCNo.Text.Length != 11 || !txtTCNo.Text.All(char.IsDigit))
-            {
-                MessageBox.Show("TC Kimlik Numarası 11 haneli ve sadece rakam olmalıdır.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            if (string.IsNullOrWhiteSpace(txtAdSoyad.Text))
-            {
-                MessageBox.Show("Ad Soyad alanı boş bırakılamaz.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            if (string.IsNullOrWhiteSpace(txtEhliyet.Text))
-            {
-                MessageBox.Show("Ehliyet No alanı boş bırakılamaz.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
+            if (txtTCNo.Text.Length != 11 || !txtTCNo.Text.All(char.IsDigit)) { MessageBox.Show("TC Kimlik Numarası 11 haneli ve sadece rakam olmalıdır.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning); return false; }
+            if (string.IsNullOrWhiteSpace(txtAdSoyad.Text)) { MessageBox.Show("Ad Soyad alanı boş bırakılamaz.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning); return false; }
+            if (string.IsNullOrWhiteSpace(txtEhliyet.Text)) { MessageBox.Show("Ehliyet No alanı boş bırakılamaz.", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Warning); return false; }
             return true;
         }
 
@@ -132,12 +205,9 @@ namespace AracKiralamaOtomasyonu
                 using (var connection = DatabaseHelper.GetConnection())
                 {
                     string query = "SELECT * FROM Musteriler";
-                    string searchKeyword = txtAra.Text.Trim();
+                    string searchKeyword = txtAra?.Text.Trim() ?? "";
                     if (searchKeyword != "TC veya Ad içinde ara..." && !string.IsNullOrEmpty(searchKeyword))
-                    {
                         query += " WHERE TCNo LIKE '%' || @arama || '%' OR AdSoyad LIKE '%' || @arama || '%'";
-                    }
-
                     using (var cmd = new SQLiteCommand(query, connection))
                     {
                         if (query.Contains("@arama")) cmd.Parameters.AddWithValue("@arama", searchKeyword);
@@ -155,36 +225,28 @@ namespace AracKiralamaOtomasyonu
 
         private void Temizle()
         {
-            txtTCNo.Clear();
-            txtAdSoyad.Clear();
-            txtTelefon.Clear();
-            txtEhliyet.Clear();
-            txtAdres.Clear();
+            txtTCNo.Clear(); txtAdSoyad.Clear(); txtTelefon.Clear();
+            txtEhliyet.Clear(); txtAdres.Clear();
             seciliMusteriId = "";
         }
 
         private void BtnEkle_Click(object sender, EventArgs e)
         {
             if (!Validasyon()) return;
-
             try
             {
                 using (var connection = DatabaseHelper.GetConnection())
+                using (var cmd = new SQLiteCommand("INSERT INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES (@p1, @p2, @p3, @p4, @p5)", connection))
                 {
-                    string query = "INSERT INTO Musteriler (TCNo, AdSoyad, Telefon, EhliyetNo, Adres) VALUES (@p1, @p2, @p3, @p4, @p5)";
-                    using (var cmd = new SQLiteCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@p1", txtTCNo.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p2", txtAdSoyad.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p3", txtTelefon.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p4", txtEhliyet.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p5", txtAdres.Text.Trim());
-                        cmd.ExecuteNonQuery();
-                    }
+                    cmd.Parameters.AddWithValue("@p1", txtTCNo.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p2", txtAdSoyad.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p3", txtTelefon.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p4", txtEhliyet.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p5", txtAdres.Text.Trim());
+                    cmd.ExecuteNonQuery();
                 }
-                MessageBox.Show("Müşteri başarıyla eklendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Listele();
-                Temizle();
+                MessageBox.Show("✅ Müşteri başarıyla eklendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Listele(); Temizle();
             }
             catch (Exception ex) { MessageBox.Show("Hata: " + ex.Message); }
         }
@@ -207,26 +269,21 @@ namespace AracKiralamaOtomasyonu
         {
             if (string.IsNullOrEmpty(seciliMusteriId)) { MessageBox.Show("Lütfen güncellenecek müşteriyi seçin."); return; }
             if (!Validasyon()) return;
-
             try
             {
                 using (var connection = DatabaseHelper.GetConnection())
+                using (var cmd = new SQLiteCommand("UPDATE Musteriler SET TCNo=@p1, AdSoyad=@p2, Telefon=@p3, EhliyetNo=@p4, Adres=@p5 WHERE Id=@id", connection))
                 {
-                    string query = "UPDATE Musteriler SET TCNo=@p1, AdSoyad=@p2, Telefon=@p3, EhliyetNo=@p4, Adres=@p5 WHERE Id=@id";
-                    using (var cmd = new SQLiteCommand(query, connection))
-                    {
-                        cmd.Parameters.AddWithValue("@p1", txtTCNo.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p2", txtAdSoyad.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p3", txtTelefon.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p4", txtEhliyet.Text.Trim());
-                        cmd.Parameters.AddWithValue("@p5", txtAdres.Text.Trim());
-                        cmd.Parameters.AddWithValue("@id", seciliMusteriId);
-                        cmd.ExecuteNonQuery();
-                    }
+                    cmd.Parameters.AddWithValue("@p1", txtTCNo.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p2", txtAdSoyad.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p3", txtTelefon.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p4", txtEhliyet.Text.Trim());
+                    cmd.Parameters.AddWithValue("@p5", txtAdres.Text.Trim());
+                    cmd.Parameters.AddWithValue("@id", seciliMusteriId);
+                    cmd.ExecuteNonQuery();
                 }
-                MessageBox.Show("Müşteri güncellendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Listele();
-                Temizle();
+                MessageBox.Show("✅ Müşteri güncellendi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Listele(); Temizle();
             }
             catch (Exception ex) { MessageBox.Show("Hata: " + ex.Message); }
         }
@@ -234,24 +291,19 @@ namespace AracKiralamaOtomasyonu
         private void BtnSil_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(seciliMusteriId)) { MessageBox.Show("Lütfen silinecek müşteriyi seçin."); return; }
-            
             var confirm = MessageBox.Show("Bu müşteriyi silmek istediğinize emin misiniz?", "Onay", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm == DialogResult.Yes)
             {
                 try
                 {
                     using (var connection = DatabaseHelper.GetConnection())
+                    using (var cmd = new SQLiteCommand("DELETE FROM Musteriler WHERE Id=@id", connection))
                     {
-                        string query = "DELETE FROM Musteriler WHERE Id=@id";
-                        using (var cmd = new SQLiteCommand(query, connection))
-                        {
-                            cmd.Parameters.AddWithValue("@id", seciliMusteriId);
-                            cmd.ExecuteNonQuery();
-                        }
+                        cmd.Parameters.AddWithValue("@id", seciliMusteriId);
+                        cmd.ExecuteNonQuery();
                     }
-                    MessageBox.Show("Müşteri silindi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Listele();
-                    Temizle();
+                    MessageBox.Show("✅ Müşteri silindi.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Listele(); Temizle();
                 }
                 catch (Exception ex) { MessageBox.Show("Hata: " + ex.Message); }
             }
